@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='CFN ETEM',
     version='0.1',
-    packages=[''],
+    packages=['cfntem'],
     url='https://www.bnl.gov/cfn/',
     license='GPL',
     author='Xiaohui Qu',
