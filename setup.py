@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='CFN ETEM,
+    name='CFN ETEM',
     version='0.1',
     packages=[''],
     url='https://www.bnl.gov/cfn/',
