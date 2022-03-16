@@ -12,7 +12,7 @@ from py4DSTEM.process.utils import tqdmnd
 from py4DSTEM.io.datastructure import DataCube
 
 
-def read_gatan_K2_bin(fp, mem="MEMMAP", binfactor=1, metadata=False, **kwargs):
+def read_gatan_K2_bin(fp, mem="MEMMAP", binfactor=1, **kwargs) -> DataCube:
     """
     Read a K2 binary 4D-STEM file.
 
@@ -39,9 +39,6 @@ def read_gatan_K2_bin(fp, mem="MEMMAP", binfactor=1, metadata=False, **kwargs):
     """
     assert mem == "MEMMAP", "K2 files can only be memory-mapped, sorry."
     assert binfactor == 1, "K2 files can only be read at full resolution, sorry."
-
-    if metadata is True:
-        return None
 
     return DataCube(data=K2DataArray(fp))
 
