@@ -100,18 +100,25 @@ class K2DataArray(Sequence):
         gtg.parseHeader()
 
         # get the important metadata
+        op_mode = gtg.allTags[".Microscope Info.Operation Mode"]
         try:
-            R_Ny = gtg.allTags[".SI Dimensions.Size Y"]
-            R_Nx = gtg.allTags[".SI Dimensions.Size X"]
+            if op_mode == "IMAGING":
+                R_Ny, R_Nx = 1, 1
+            else:
+                R_Ny = gtg.allTags[".SI Dimensions.Size Y"]
+                R_Nx = gtg.allTags[".SI Dimensions.Size X"]
         except ValueError:
             print("Warning: scan shape not detected. Please check/set manually.")
             R_Nx = self._guess_number_frames() // 32
             R_Ny = 1
 
         try:
-            # this may be wrong for binned data... in which case the reader doesn't work anyway!
-            Q_Nx = gtg.allTags[".SI Image Tags.Acquisition.Parameters.Detector.height"]
-            Q_Ny = gtg.allTags[".SI Image Tags.Acquisition.Parameters.Detector.width"]
+            if op_mode == "IMAGING":
+                Q_Ny, Q_Nx = gtg.allTags[".Acquisition.Device.Active Size (pixels)"]
+            else:
+                # this may be wrong for binned data... in which case the reader doesn't work anyway!
+                Q_Nx = gtg.allTags[".SI Image Tags.Acquisition.Parameters.Detector.height"]
+                Q_Ny = gtg.allTags[".SI Image Tags.Acquisition.Parameters.Detector.width"]
         except:
             print("Warning: diffraction pattern shape not detected!")
             print("Assuming 1920x1792 as the diffraction pattern size!")
