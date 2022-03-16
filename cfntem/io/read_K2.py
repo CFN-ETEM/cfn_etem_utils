@@ -114,7 +114,8 @@ class K2DataArray(Sequence):
 
         try:
             if op_mode == "IMAGING":
-                Q_Ny, Q_Nx = gtg.allTags[".Acquisition.Device.Active Size (pixels)"]
+                Q_Nx = gtg.allTags[".Acquisition.Parameters.Detector.height"]
+                Q_Ny = gtg.allTags[".Acquisition.Parameters.Detector.width"]
             else:
                 # this may be wrong for binned data... in which case the reader doesn't work anyway!
                 Q_Nx = gtg.allTags[".SI Image Tags.Acquisition.Parameters.Detector.height"]
