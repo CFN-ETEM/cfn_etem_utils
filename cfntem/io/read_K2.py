@@ -103,7 +103,8 @@ class K2DataArray(Sequence):
         op_mode = gtg.allTags[".Microscope Info.Operation Mode"]
         try:
             if op_mode == "IMAGING":
-                R_Ny, R_Nx = 1, 1
+                R_Nx = self._guess_number_frames() // 32
+                R_Ny = 1
             else:
                 R_Ny = gtg.allTags[".SI Dimensions.Size Y"]
                 R_Nx = gtg.allTags[".SI Dimensions.Size X"]
