@@ -12,7 +12,7 @@ from py4DSTEM.process.utils import tqdmnd
 from py4DSTEM.io.datastructure import DataCube
 
 
-def read_gatan_K2_bin(fp, mem="MEMMAP", binfactor=1, **kwargs) -> DataCube:
+def read_gatan_K2_bin(fp, mem="MEMMAP", binfactor=1, metadata=False, **kwargs):
     """
     Read a K2 binary 4D-STEM file.
 
@@ -39,6 +39,9 @@ def read_gatan_K2_bin(fp, mem="MEMMAP", binfactor=1, **kwargs) -> DataCube:
     """
     assert mem == "MEMMAP", "K2 files can only be memory-mapped, sorry."
     assert binfactor == 1, "K2 files can only be read at full resolution, sorry."
+
+    if metadata is True:
+        return None
 
     return DataCube(data=K2DataArray(fp))
 
@@ -100,27 +103,18 @@ class K2DataArray(Sequence):
         gtg.parseHeader()
 
         # get the important metadata
-        op_mode = gtg.allTags[".Microscope Info.Operation Mode"]
         try:
-            if op_mode == "IMAGING":
-                R_Nx = self._guess_number_frames() // 32
-                R_Ny = 1
-            else:
-                R_Ny = gtg.allTags[".SI Dimensions.Size Y"]
-                R_Nx = gtg.allTags[".SI Dimensions.Size X"]
+            R_Ny = gtg.allTags[".SI Dimensions.Size Y"]
+            R_Nx = gtg.allTags[".SI Dimensions.Size X"]
         except ValueError:
             print("Warning: scan shape not detected. Please check/set manually.")
             R_Nx = self._guess_number_frames() // 32
             R_Ny = 1
 
         try:
-            if op_mode == "IMAGING":
-                Q_Nx = gtg.allTags[".Acquisition.Parameters.Detector.height"]
-                Q_Ny = gtg.allTags[".Acquisition.Parameters.Detector.width"]
-            else:
-                # this may be wrong for binned data... in which case the reader doesn't work anyway!
-                Q_Nx = gtg.allTags[".SI Image Tags.Acquisition.Parameters.Detector.height"]
-                Q_Ny = gtg.allTags[".SI Image Tags.Acquisition.Parameters.Detector.width"]
+            # this may be wrong for binned data... in which case the reader doesn't work anyway!
+            Q_Nx = gtg.allTags[".SI Image Tags.Acquisition.Parameters.Detector.height"]
+            Q_Ny = gtg.allTags[".SI Image Tags.Acquisition.Parameters.Detector.width"]
         except:
             print("Warning: diffraction pattern shape not detected!")
             print("Assuming 1920x1792 as the diffraction pattern size!")
@@ -280,11 +274,33 @@ class K2DataArray(Sequence):
         self._bin_files = np.empty(8, dtype=object)
         for i in range(8):
             binName = self._bin_prefix + str(i + 1) + ".bin"
+
+            # Synchronize to the magic sync word
+            # First, open the file in binary mode and read ~1 MB
+            with open(binName, 'rb') as f:
+                s = f.read(1_000_000)
+
+            # Scan the chunk and find everywhere the sync word appears
+            sync = [s.find(b'\xff\xff\x00\x55'),]
+            while sync[-1] >= 0:
+                sync.append(s.find(b'\xff\xff\x00\x55',sync[-1]+1))
+
+            # Since the sync word can conceivably occur within the data region,
+            # check that there is another sync word 22360 bytes away
+            sync_idx = 0
+            while 0 not in [s - sync[sync_idx] - 22360 for s in sync]:
+                sync_idx += 1
+
+            if sync_idx > 0:
+                print(f"Beginning file {i} at offset {sync[sync_idx]} due to incomplete data block!")
+
+            # Start the memmap at the offset of the sync byte
             self._bin_files[i] = np.memmap(
                 binName,
                 dtype=self._stripe_dtype,
                 mode="r",
                 shape=(self._guess_number_frames(),),
+                offset=sync[sync_idx],
             )
 
     def _find_offsets(self):
@@ -534,6 +550,7 @@ else:
 
         DP = out.astype(np.int16)
         return DP
+
 
 
 
