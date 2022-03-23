@@ -116,7 +116,7 @@ class K2DataArray(Sequence):
             R_Ny = 1
 
         try:
-            if if gtg.allTags['.Microscope Info.Operation Mode'] == 'IMAGING':
+            if gtg.allTags['.Microscope Info.Operation Mode'] == 'IMAGING':
                 Q_Nx = gtg.allTags[".Acquisition.Parameters.Detector.height"]
                 Q_Ny = gtg.allTags[".Acquisition.Parameters.Detector.width"]
             else:
