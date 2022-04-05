@@ -10,7 +10,12 @@
             "request": "launch",
             "program": "/home/xiaqu/vscode_workspace/cfn_etem_utils/cfntem/cmd/read_K2.py",
             "console": "integratedTerminal",
-            "justMyCode": true
+            "justMyCode": true,
+            "args": [
+                "-g", "/home/xiaqu/Documents/data/Converter_Project/Capture6/Capture6_.gtg",
+                "-b", "100",
+                "--ipp_dir", "/home/xiaqu/Downloads/test/image_conv/ipypar"
+            ]
         }
     ]
 }
