@@ -59,7 +59,7 @@ def main():
     frame_id_batches = np.arange(math.ceil(n_frames/batch_size)*batch_size).reshape(-1, batch_size).tolist()
     frame_id_batches[-1] = frame_id_batches[-1][:n_frames%batch_size]
     
-    out_dir = os.path.join(args.out_dir, os.path.basename(args.gtg_file).replace("*_.gtg", ""))
+    out_dir = os.path.join(args.out_dir, os.path.basename(args.gtg_file).replace("_.gtg", ""))
     map_func, n_procs = get_map_func(args.ipp_dir, args.gtg_file, frame_duration, out_dir)
     print(f"There are {n_frames} frames, will convert using {n_procs}" 
            "processes and allocate {batch_size} images each time")
