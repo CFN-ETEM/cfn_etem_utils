@@ -75,8 +75,8 @@ def main():
     print(f"There are {n_frames} frames, will convert using {n_procs} " 
           f"processes and allocate {batch_size} images each time")
     err_list = map_func(convert_image_batch, frame_id_batches)
-    time_used = time.time() - start_time
     err_list = list(itertools.chain(*err_list))
+    time_used = time.time() - start_time
     if len(err_list) > 0:
         print('\n\n'.join(err_list))
     print(f"Conversion finished. Time used: {time_used:.2f}s.\n\n")
