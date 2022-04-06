@@ -32,7 +32,7 @@ def convert_image_batch(id_list):
         img = datacube.data[i_frame, 0, :, :].mean(axis=0)
         img = (255 * img / img.max()).astype('uint8')
         rt = relativedelta(seconds=frame_duration * i_frame)
-        time_txt = f'Hour{int(rt.hous):02d}_Minute{int(rt.minutes):02d}_Second{int(rt.seconds)}'
+        time_txt = f'Hour{int(rt.hours):02d}_Minute{int(rt.minutes):02d}_Second{int(rt.seconds)}'
         fn = f'{out_dir}/{time_txt}/{time_txt}_Frame{i_frame % int(1.0/frame_duration)}.png'
         cv2.imwrite(fn, img)
 
