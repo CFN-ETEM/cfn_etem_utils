@@ -26,7 +26,7 @@
             "console": "integratedTerminal",
             "justMyCode": true,
             "args": [
-                "start", "-n", "32",
+                "start", "-n", "8",
                 "--profile-dir", "/home/xiaqu/Downloads/test/image_conv/ipypar"
             ]
         }
