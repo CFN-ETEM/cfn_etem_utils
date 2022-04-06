@@ -21,6 +21,7 @@ def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
     with c[:].sync_imports():
         from cfntem.io.read_K2 import read_gatan_K2_bin
         import cv2
+        import os
         from dateutil.relativedelta import relativedelta
     c[:].apply(set_engine_global_variables, gtg_file, frame_duration, out_dir)
     c[:].wait()
@@ -34,6 +35,9 @@ def convert_image_batch(id_list):
         rt = relativedelta(seconds=frame_duration * i_frame)
         time_txt = f'Hour{int(rt.hours):02d}_Minute{int(rt.minutes):02d}_Second{int(rt.seconds)}'
         fn = f'{out_dir}/{time_txt}/{time_txt}_Frame{i_frame % int(1.0/frame_duration)}.png'
+        dn = os.path.dirname(fn)
+        if not os.path.exists(dn):
+            os.makedirs(dn)
         cv2.imwrite(fn, img)
 
 
