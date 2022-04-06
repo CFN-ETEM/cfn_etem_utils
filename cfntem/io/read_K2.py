@@ -84,17 +84,7 @@ class K2DataArray(Sequence):
         import glob
 
         # first parse the input and get the path to the *.gtg
-        if not os.path.isdir(filepath):
-            filepath = os.path.dirname(filepath)
-
-        assert (
-            len(glob.glob(os.path.join(filepath, "*.bin"))) == 8
-        ), "Wrong path, or wrong number of bin files."
-        assert (
-            len(glob.glob(os.path.join(filepath, "*.gtg"))) == 1
-        ), "Wrong path, or wrong number of gtg files."
-
-        gtgpath = os.path.join(filepath, glob.glob(os.path.join(filepath, "*.gtg"))[0])
+        gtgpath = os.path.abspath(filepath)
         binprefix = gtgpath[:-4]
 
         self._gtg_file = gtgpath
