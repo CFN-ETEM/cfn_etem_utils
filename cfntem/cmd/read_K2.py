@@ -66,8 +66,8 @@ def main():
     start_time = time.time()
     out_dir = os.path.join(args.out_dir, os.path.basename(args.gtg_file).replace("_.gtg", ""))
     map_func, n_procs = get_map_func(args.ipp_dir, args.gtg_file, frame_duration, out_dir)
-    print(f"There are {n_frames} frames, will convert using {n_procs}" 
-           "processes and allocate {batch_size} images each time")
+    print(f"There are {n_frames} frames, will convert using {n_procs} " 
+          f"processes and allocate {batch_size} images each time")
     err_list = map_func(convert_image_batch, frame_id_batches)
     time_used = time.time() - start_time
     err_list = list(itertools.chain(*err_list))
