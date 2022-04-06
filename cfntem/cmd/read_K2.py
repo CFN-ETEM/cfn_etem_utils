@@ -55,6 +55,8 @@ def main():
                         help='The directory for IpyParallel environment')
     parser.add_argument('--out_dir', type=str, default='ipypar',
                         help='The directory to save converted images')
+    parser.add_argument('-s', '--sequential', action='store_true',
+                        help='Run the conversion sequentially')
     args = parser.parse_args()
     datacube = read_gatan_K2_bin(args.gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     n_frames = datacube.data.shape[0]
@@ -65,7 +67,11 @@ def main():
     
     start_time = time.time()
     out_dir = os.path.join(args.out_dir, os.path.basename(args.gtg_file).replace("_.gtg", ""))
-    map_func, n_procs = get_map_func(args.ipp_dir, args.gtg_file, frame_duration, out_dir)
+    if args.sequential:
+        map_func, n_procs = map, 1
+        set_engine_global_variables(args.gtg_file, frame_duration, out_dir)
+    else:
+        map_func, n_procs = get_map_func(args.ipp_dir, args.gtg_file, frame_duration, out_dir)
     print(f"There are {n_frames} frames, will convert using {n_procs} " 
           f"processes and allocate {batch_size} images each time")
     err_list = map_func(convert_image_batch, frame_id_batches)
