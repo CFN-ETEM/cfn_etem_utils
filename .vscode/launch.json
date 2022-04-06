@@ -14,7 +14,20 @@
             "args": [
                 "-g", "/home/xiaqu/Documents/data/Converter_Project/Capture6/Capture6_.gtg",
                 "-b", "100",
-                "--ipp_dir", "/home/xiaqu/Downloads/test/image_conv/ipypar"
+                "--ipp_dir", "/home/xiaqu/Downloads/test/image_conv/ipypar",
+                "--out_dir", "/home/xiaqu/Downloads/test/image_conv/out_images"
+            ]
+        },
+        {
+            "name": "start IpyParallel",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/xiaqu/programs/miniconda3/envs/k2_conv/bin/ipcluster",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "start", "-n", "2",
+                "--profile-dir", "/home/xiaqu/Downloads/test/image_conv/ipypar"
             ]
         }
     ]

@@ -5,14 +5,15 @@ import numpy as np
 import math
 from dateutil.relativedelta import relativedelta
 import ipyparallel as ipp
-import cv2
+import cv2, os
 
-datacube, frame_duration, out_dir = None, None
+def set_engine_global_variables(gtg_file, fm_dur, od):
+    global datacube, frame_duration, out_dir
+    datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
+    frame_duration = fm_dur
+    out_dir = od
 
-def reset_file_pointer():
-    datacube.data._attach_to_files()
-
-def get_map_func(ipp_dir, datacube, frame_duration, out_dir):
+def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
     c = ipp.Client(
         connection_info=f"{ipp_dir}/security/ipcontroller-client.json"
     )
@@ -21,13 +22,12 @@ def get_map_func(ipp_dir, datacube, frame_duration, out_dir):
         from cfntem.io.read_K2 import read_gatan_K2_bin
         import cv2
         from dateutil.relativedelta import relativedelta
-    c[:].push({'datacube': datacube,
-               "frame_duration": frame_duration,
-               "out_dir": out_dir}, block=True)
-    c[:].apply(reset_file_pointer)
+    c[:].apply(set_engine_global_variables, gtg_file, frame_duration, out_dir)
+    c[:].wait()
     return map_func, len(c.ids)
 
-def convert_image_batch(id_list, out_dir):
+def convert_image_batch(id_list):
+    global datacube, frame_duration, out_dir
     for i_frame in id_list:
         img = datacube.data[i_frame, 0, :, :].mean(axis=0)
         img = (255 * img / img.max()).astype('uint8')
@@ -55,7 +55,8 @@ def main():
     frame_id_batches = np.arange(math.ceil(n_frames/batch_size)*batch_size).reshape(-1, batch_size).tolist()
     frame_id_batches[-1] = frame_id_batches[-1][:n_frames%batch_size]
     
-    map_func, n_procs = get_map_func(args.ipp_dir, datacube, frame_duration)
+    out_dir = os.path.join(args.out_dir, os.path.basename(args.gtg_file).replace("*_.gtg", ""))
+    map_func, n_procs = get_map_func(args.ipp_dir, args.gtg_file, frame_duration, out_dir)
     print(f"There are {n_frames} frames, will convert using {n_procs}" 
            "processes and allocate {batch_size} images each time")
     map_func(frame_id_batches)
