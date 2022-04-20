@@ -296,8 +296,9 @@ class K2DataArray(Sequence):
                 print(f"Beginning file {i} at offset {sync[sync_idx]} due to incomplete data block!")
 
             # Start the memmap at the offset of the sync byte
+            fobj = open(binName, "br", buffering=int(2.0E9))
             self._bin_files[i] = np.memmap(
-                binName,
+                fobj,
                 dtype=self._stripe_dtype,
                 mode="r",
                 shape=(self._guess_number_frames(),),
