@@ -14,7 +14,7 @@ def set_engine_global_variables(gtg_file, fm_dur, od):
     datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     frame_duration = fm_dur
     out_dir = od
-    log_dir = "out_dir/conv_logs"
+    log_dir = f"{out_dir}/conv_logs"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir, exist_ok=True)
     log_path = f"{log_dir}/engine_{engine_id:02d}.txt"
@@ -69,7 +69,7 @@ def convert_image_batch(id_list):
                 os.makedirs(dn)
             cv2.imwrite(fn, img)
             if j < 5:
-                logger.info(f"Processed frame {i_frame} at {datetime.isoformat(datetime.now())}\n\n")
+                logger.info(f"Processed frame {i_frame} at {datetime.isoformat(datetime.now())}")
         except Exception as ex:
             error_messages.append(f"Error at frame number {i_frame}:\n{ex}")
     logger.info(f"Finished processing {id_list[:3]} to {id_list[-3:]} at {datetime.isoformat(datetime.now())}\n\n")
