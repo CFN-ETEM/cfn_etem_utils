@@ -1,16 +1,32 @@
 
 import argparse, os, itertools, time, math
+from datetime import datetime
 from cfntem.io.read_K2 import read_gatan_K2_bin
 import numpy as np
 from dateutil.relativedelta import relativedelta
 import ipyparallel as ipp
 import cv2
+import logging
 
-def set_engine_global_variables(gtg_file, fm_dur, od):
-    global datacube, frame_duration, out_dir
+def set_engine_global_variables(gtg_file, fm_dur, od, ei):
+    global datacube, frame_duration, out_dir, engine_id, logger
     datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     frame_duration = fm_dur
     out_dir = od
+    engine_id = ei
+    log_path = f"conv_logs/engine_{engine_id:02d}.txt"
+    handler = logging.FileHandler(log_path) # print log in file
+    handler.setLevel(logging.DEBUG)
+    handler.setFormatter(
+        logging.Formatter(
+            fmt = '%(asctime)s %(levelname)s:  %(message)s',
+            datefmt ='%m-%d %H:%M'
+        )
+    )
+    logger = logging.getLogger(f"engine_{engine_id:02d}_info")
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+
 
 def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
     c = ipp.Client(
@@ -22,26 +38,31 @@ def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
         import cv2
         import os
         from dateutil.relativedelta import relativedelta
-    c[:].apply(set_engine_global_variables, gtg_file, frame_duration, out_dir)
+    c[:].apply(set_engine_global_variables, gtg_file, frame_duration, out_dir, list(range(len(c.ids))))
     c[:].wait()
     return map_func, len(c.ids)
 
 def convert_image_batch(id_list):
-    global datacube, frame_duration, out_dir
+    global datacube, frame_duration, out_dir, engine_id, logger
     error_messages = []
-    for i_frame in id_list:
+    logger.info(f"Ftarted to process {id_list[:3]} to {id_list[-3:]} at {datetime.isoformat(datetime.now())}")
+    for j, i_frame in enumerate(id_list):
         try:
             img = datacube.data[i_frame, 0, :, :].mean(axis=0)
             img = (255 * img / img.max()).astype('uint8')
             rt = relativedelta(seconds=frame_duration * i_frame)
             time_txt = f'Hour{int(rt.hours):02d}_Minute{int(rt.minutes):02d}_Second{int(rt.seconds):02d}'
-            fn = f'{out_dir}/{time_txt}/{time_txt}_Frame{i_frame % int(1.0/frame_duration)}.png'
+            dir_time_txt = '/'.join(time_txt.split("_")[:-1])
+            fn = f'{out_dir}/{dir_time_txt}/{time_txt}_Frame{i_frame % int(1.0/frame_duration)}.png'
             dn = os.path.dirname(fn)
             if not os.path.exists(dn):
                 os.makedirs(dn)
             cv2.imwrite(fn, img)
+            if j < 5:
+                logger.info(f"Process frame {i_frame} at {datetime.isoformat(datetime.now())}\n\n")
         except Exception as ex:
             error_messages.append(f"Error at frame number {i_frame}:\n{ex}")
+    logger.info(f"Finished processing {id_list[:3]} to {id_list[-3:]} at {datetime.isoformat(datetime.now())}\n\n")
     return error_messages
 
 
@@ -58,6 +79,7 @@ def main():
     parser.add_argument('-s', '--sequential', action='store_true',
                         help='Run the conversion sequentially')
     args = parser.parse_args()
+    print("first round reading", datetime.isoformat(datetime.now()))
     datacube = read_gatan_K2_bin(args.gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     n_frames = datacube.data.shape[0]
     frame_duration = datacube.data._gtg_meta['.Acquisition.Frame.Sequence.Frame Exposure (s)']
@@ -67,14 +89,17 @@ def main():
     
     start_time = time.time()
     out_dir = os.path.join(args.out_dir, os.path.basename(args.gtg_file).replace("_.gtg", ""))
+    print("Set up parallel or sequential engine", datetime.isoformat(datetime.now()))
     if args.sequential:
         map_func, n_procs = map, 1
-        set_engine_global_variables(args.gtg_file, frame_duration, out_dir)
+        set_engine_global_variables(args.gtg_file, frame_duration, out_dir, [0])
     else:
         map_func, n_procs = get_map_func(args.ipp_dir, args.gtg_file, frame_duration, out_dir)
     print(f"There are {n_frames} frames, will convert using {n_procs} " 
           f"processes and allocate {batch_size} images each time")
+    print("Start conversion", datetime.isoformat(datetime.now()))
     err_list = map_func(convert_image_batch, frame_id_batches)
+    print("Finished conversion", datetime.isoformat(datetime.now()))
     err_list = list(itertools.chain(*err_list))
     time_used = time.time() - start_time
     if len(err_list) > 0:
