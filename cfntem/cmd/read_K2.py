@@ -9,7 +9,8 @@ import cv2
 import logging
 
 def set_engine_global_variables(gtg_file, fm_dur, od):
-    global datacube, frame_duration, out_dir, engine_id, logger
+    global datacube, frame_duration, out_dir, engine_id
+    global logger
     datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     frame_duration = fm_dur
     out_dir = od
@@ -38,7 +39,8 @@ def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
     with c[:].sync_imports():
         from cfntem.io.read_K2 import read_gatan_K2_bin
         import cv2
-        import os
+        import os, logging
+        from datetime import datetime
         from dateutil.relativedelta import relativedelta
     for i, en in enumerate(c):
         en.apply(set_engine_id, i)
@@ -47,7 +49,8 @@ def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
     return map_func, len(c.ids)
 
 def convert_image_batch(id_list):
-    global datacube, frame_duration, out_dir, engine_id, logger
+    global datacube, frame_duration, out_dir, engine_id
+    logger = logging.getLogger(f"engine_{engine_id:02d}_info")
     error_messages = []
     logger.info(f"Ftarted to process {id_list[:3]} to {id_list[-3:]} at {datetime.isoformat(datetime.now())}")
     for j, i_frame in enumerate(id_list):
