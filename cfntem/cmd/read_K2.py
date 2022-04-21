@@ -8,12 +8,11 @@ import ipyparallel as ipp
 import cv2
 import logging
 
-def set_engine_global_variables(gtg_file, fm_dur, od, ei):
+def set_engine_global_variables(gtg_file, fm_dur, od):
     global datacube, frame_duration, out_dir, engine_id, logger
     datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     frame_duration = fm_dur
     out_dir = od
-    engine_id = ei
     log_path = f"conv_logs/engine_{engine_id:02d}.txt"
     handler = logging.FileHandler(log_path) # print log in file
     handler.setLevel(logging.DEBUG)
@@ -27,6 +26,9 @@ def set_engine_global_variables(gtg_file, fm_dur, od, ei):
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
 
+def set_engine_id(ei):
+    global engine_id
+    engine_id = ei
 
 def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
     c = ipp.Client(
@@ -38,7 +40,9 @@ def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
         import cv2
         import os
         from dateutil.relativedelta import relativedelta
-    c[:].apply(set_engine_global_variables, gtg_file, frame_duration, out_dir, list(range(len(c.ids))))
+    for i, en in enumerate(c):
+        en.apply(set_engine_id, i)
+    c[:].apply(set_engine_global_variables, gtg_file, frame_duration, out_dir)
     c[:].wait()
     return map_func, len(c.ids)
 
@@ -92,7 +96,8 @@ def main():
     print("Set up parallel or sequential engine", datetime.isoformat(datetime.now()))
     if args.sequential:
         map_func, n_procs = map, 1
-        set_engine_global_variables(args.gtg_file, frame_duration, out_dir, [0])
+        set_engine_id(0)
+        set_engine_global_variables(args.gtg_file, frame_duration, out_dir)
     else:
         map_func, n_procs = get_map_func(args.ipp_dir, args.gtg_file, frame_duration, out_dir)
     print(f"There are {n_frames} frames, will convert using {n_procs} " 
