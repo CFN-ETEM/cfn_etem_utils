@@ -14,7 +14,10 @@ def set_engine_global_variables(gtg_file, fm_dur, od):
     datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     frame_duration = fm_dur
     out_dir = od
-    log_path = f"conv_logs/engine_{engine_id:02d}.txt"
+    log_dir = "out_dir/conv_logs"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
+    log_path = f"{log_dir}/engine_{engine_id:02d}.txt"
     handler = logging.FileHandler(log_path) # print log in file
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(
@@ -52,7 +55,7 @@ def convert_image_batch(id_list):
     global datacube, frame_duration, out_dir, engine_id
     logger = logging.getLogger(f"engine_{engine_id:02d}_info")
     error_messages = []
-    logger.info(f"Ftarted to process {id_list[:3]} to {id_list[-3:]} at {datetime.isoformat(datetime.now())}")
+    logger.info(f"Started to process {id_list[:3]} to {id_list[-3:]} at {datetime.isoformat(datetime.now())}")
     for j, i_frame in enumerate(id_list):
         try:
             img = datacube.data[i_frame, 0, :, :].mean(axis=0)
@@ -66,7 +69,7 @@ def convert_image_batch(id_list):
                 os.makedirs(dn)
             cv2.imwrite(fn, img)
             if j < 5:
-                logger.info(f"Process frame {i_frame} at {datetime.isoformat(datetime.now())}\n\n")
+                logger.info(f"Processed frame {i_frame} at {datetime.isoformat(datetime.now())}\n\n")
         except Exception as ex:
             error_messages.append(f"Error at frame number {i_frame}:\n{ex}")
     logger.info(f"Finished processing {id_list[:3]} to {id_list[-3:]} at {datetime.isoformat(datetime.now())}\n\n")
