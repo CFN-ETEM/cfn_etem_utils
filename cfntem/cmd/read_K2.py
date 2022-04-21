@@ -58,6 +58,8 @@ def convert_image_batch(id_list):
     logger.info(f"Started to process {id_list[:3]} to {id_list[-3:]} at {datetime.isoformat(datetime.now())}")
     for j, i_frame in enumerate(id_list):
         try:
+            if j < 3:
+                logger.info(f"Extract frame {i_frame} at {datetime.isoformat(datetime.now())}")
             img = datacube.data[i_frame, 0, :, :].mean(axis=0)
             img = (255 * img / img.max()).astype('uint8')
             rt = relativedelta(seconds=frame_duration * i_frame)
@@ -65,10 +67,12 @@ def convert_image_batch(id_list):
             dir_time_txt = '/'.join(time_txt.split("_")[:-1])
             fn = f'{out_dir}/{dir_time_txt}/{time_txt}_Frame{i_frame % int(1.0/frame_duration)}.png'
             dn = os.path.dirname(fn)
+            if j < 3:
+                logger.info(f"Write frame {i_frame} to PNG at {datetime.isoformat(datetime.now())}")
             if not os.path.exists(dn):
                 os.makedirs(dn)
             cv2.imwrite(fn, img)
-            if j < 5:
+            if j < 3:
                 logger.info(f"Processed frame {i_frame} at {datetime.isoformat(datetime.now())}")
         except Exception as ex:
             error_messages.append(f"Error at frame number {i_frame}:\n{ex}")
