@@ -14,7 +14,7 @@ def set_engine_global_variables(gtg_file, fm_dur, od):
     datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     frame_duration = fm_dur
     out_dir = od
-    log_dir = f"{out_dir}/conv_logs"
+    log_dir = f"{out_dir.split('out_images')[0][:-1]}/conv_logs"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir, exist_ok=True)
     log_path = f"{log_dir}/engine_{engine_id:02d}.txt"
