@@ -131,7 +131,7 @@ def main():
         new_dn_list = list(seg_dn_list - created_dn_set)
         for dn in new_dn_list:
             os.makedirs(dn)
-        created_dn_set = created_dn_set + new_dn_list
+        created_dn_set = created_dn_set | seg_dn_list
         el = map_func(convert_image_batch, seg_batches)
         err_list.extend(el)
     print("Finished conversion", datetime.isoformat(datetime.now()))
