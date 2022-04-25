@@ -118,7 +118,7 @@ def main():
     created_dn_set = {}
     for i_seg in range(math.ceil(len(frame_id_batches)/batch_size)):
         seg_batches = frame_id_batches[i_seg*batch_size: (i_seg+1)*batch_size]
-        logger.info(f"Process segment {seg_batches[0][:3]} to {seg_batches[-1][-3:]} at {datetime.isoformat(datetime.now())}")
+        print(f"Process segment {seg_batches[0][:3]} to {seg_batches[-1][-3:]} at {datetime.isoformat(datetime.now())}")
         seg_id_list = list(itertools.chain(*seg_batches))
         seg_dn_list = []
         for i_frame in seg_id_list:
