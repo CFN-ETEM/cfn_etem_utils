@@ -115,7 +115,7 @@ def main():
           f"processes and allocate {batch_size} images each time")
     print("Start conversion", datetime.isoformat(datetime.now()))
     err_list = []
-    created_dn_set = {}
+    created_dn_set = set()
     for i_seg in range(math.ceil(len(frame_id_batches)/batch_size)):
         seg_batches = frame_id_batches[i_seg*batch_size: (i_seg+1)*batch_size]
         print(f"Process segment {seg_batches[0][:3]} to {seg_batches[-1][-3:]} at {datetime.isoformat(datetime.now())}")
