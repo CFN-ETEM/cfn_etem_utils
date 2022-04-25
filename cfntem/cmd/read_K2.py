@@ -18,8 +18,6 @@ def set_engine_global_variables(gtg_file, fm_dur, od):
     frame_duration = fm_dur
     out_dir = od
     log_dir = f"{out_dir.split('out_images')[0][:-1]}/conv_logs"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir, exist_ok=True)
     log_path = f"{log_dir}/engine_{engine_id:02d}.txt"
     handler = logging.FileHandler(log_path) # print log in file
     handler.setLevel(logging.DEBUG)
@@ -69,11 +67,8 @@ def convert_image_batch(id_list):
             time_txt = f'Hour{int(rt.hours):02d}_Minute{int(rt.minutes):02d}_Second{int(rt.seconds):02d}'
             dir_time_txt = '/'.join(time_txt.split("_")[:-1])
             fn = f'{out_dir}/{dir_time_txt}/{time_txt}_Frame{i_frame % int(1.0/frame_duration)}.png'
-            dn = os.path.dirname(fn)
             if j < 3:
                 logger.info(f"Write frame {i_frame} to PNG at {datetime.isoformat(datetime.now())}")
-            if not os.path.exists(dn):
-                os.makedirs(dn)
             cv2.imwrite(fn, img)
             if j < 3:
                 logger.info(f"Processed frame {i_frame} at {datetime.isoformat(datetime.now())}")
@@ -107,6 +102,9 @@ def main():
     start_time = time.time()
     out_dir = os.path.join(args.out_dir, os.path.basename(args.gtg_file).replace("_.gtg", ""))
     print("Set up parallel or sequential engine", datetime.isoformat(datetime.now()))
+    log_dir = f"{out_dir.split('out_images')[0][:-1]}/conv_logs"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir, exist_ok=True)
     if args.sequential:
         map_func, n_procs = map, 1
         set_engine_id(0)
@@ -116,7 +114,26 @@ def main():
     print(f"There are {n_frames} frames, will convert using {n_procs} " 
           f"processes and allocate {batch_size} images each time")
     print("Start conversion", datetime.isoformat(datetime.now()))
-    err_list = map_func(convert_image_batch, frame_id_batches)
+    err_list = []
+    created_dn_set = {}
+    for i_seg in range(math.ceil(len(frame_id_batches)/batch_size)):
+        seg_batches = frame_id_batches[i_seg*batch_size: (i_seg+1)*batch_size]
+        logger.info(f"Process segment {seg_batches[0][:3]} to {seg_batches[-1][-3:]} at {datetime.isoformat(datetime.now())}")
+        seg_id_list = list(itertools.chain(*seg_batches))
+        seg_dn_list = []
+        for i_frame in seg_id_list:
+            rt = relativedelta(seconds=frame_duration * i_frame)
+            time_txt = f'Hour{int(rt.hours):02d}_Minute{int(rt.minutes):02d}_Second{int(rt.seconds):02d}'
+            dir_time_txt = '/'.join(time_txt.split("_")[:-1])
+            dn = f'{out_dir}/{dir_time_txt}'
+            seg_dn_list.append(dn)
+        seg_dn_list = set(seg_dn_list)
+        new_dn_list = list(seg_dn_list - created_dn_set)
+        for dn in new_dn_list:
+            os.makedirs(dn)
+        created_dn_set = created_dn_set + new_dn_list
+        el = map_func(convert_image_batch, seg_batches)
+        err_list.extend(el)
     print("Finished conversion", datetime.isoformat(datetime.now()))
     err_list = list(itertools.chain(*err_list))
     time_used = time.time() - start_time
