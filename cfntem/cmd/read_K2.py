@@ -41,7 +41,7 @@ def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
     c = ipp.Client(
         connection_info=f"{ipp_dir}/security/ipcontroller-client.json"
     )
-    map_func =  c.load_balanced_view().map_sync
+    map_func =  c[:].map_sync
     with c[:].sync_imports():
         from cfntem.io.read_K2 import read_gatan_K2_bin
         import cv2
