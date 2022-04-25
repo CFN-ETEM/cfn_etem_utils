@@ -116,8 +116,8 @@ def main():
     print("Start conversion", datetime.isoformat(datetime.now()))
     err_list = []
     created_dn_set = set()
-    for i_seg in range(math.ceil(len(frame_id_batches)/batch_size)):
-        seg_batches = frame_id_batches[i_seg*batch_size: (i_seg+1)*batch_size]
+    for i_seg in range(math.ceil(len(frame_id_batches)/n_procs)):
+        seg_batches = frame_id_batches[i_seg*n_procs: (i_seg+1)*n_procs]
         print(f"Process segment {seg_batches[0][:3]} to {seg_batches[-1][-3:]} at {datetime.isoformat(datetime.now())}")
         seg_id_list = list(itertools.chain(*seg_batches))
         seg_dn_list = []
