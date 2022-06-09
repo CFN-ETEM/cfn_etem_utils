@@ -64,7 +64,7 @@ def convert_image_batch(id_list):
             img = (255 * img / img.max()).astype('uint8')
             rt = relativedelta(seconds=frame_duration * i_frame)
             time_txt = f'Hour{int(rt.hours):02d}_Minute{int(rt.minutes):02d}_Second{int(rt.seconds):02d}'
-            dir_time_txt = '/'.join(time_txt.split("_")[:-1])
+            dir_time_txt = '/'.join(time_txt.split("_"))
             fn = f'{out_dir}/{dir_time_txt}/{time_txt}_Frame{i_frame % int(1.0/frame_duration)}.png'
             dn = os.path.dirname(fn)
             if j < 3:
