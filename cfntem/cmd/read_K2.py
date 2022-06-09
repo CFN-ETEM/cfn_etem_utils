@@ -10,7 +10,6 @@ import logging
 
 def set_engine_global_variables(gtg_file, fm_dur, od):
     global datacube, frame_duration, out_dir, engine_id
-    global logger
     datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     frame_duration = fm_dur
     out_dir = od
