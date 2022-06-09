@@ -69,7 +69,7 @@ def convert_image_batch(id_list):
             if j < 3:
                 logger.info(f"Write frame {i_frame} to PNG at {datetime.isoformat(datetime.now())}")
             if not os.path.exists(dn):
-                os.makedirs(dn)
+                os.makedirs(dn, exist_ok=True)
             cv2.imwrite(fn, img)
             if j < 3:
                 logger.info(f"Processed frame {i_frame} at {datetime.isoformat(datetime.now())}")
