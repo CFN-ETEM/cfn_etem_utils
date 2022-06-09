@@ -16,7 +16,8 @@ setup(
     install_requires=required_list,
     entry_points={
         "console_scripts": [
-            "read_K2 = cfntem.cmd.read_K2:main"
+            "read_K2 = cfntem.cmd.read_K2:main",
+            "wait_ipp_engines = cfntem.cmd.wait_ipp_engines:main",
         ]
     },
     scripts=[
