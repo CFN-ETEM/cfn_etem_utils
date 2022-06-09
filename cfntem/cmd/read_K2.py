@@ -10,11 +10,7 @@ import logging
 
 def set_engine_global_variables(gtg_file, fm_dur, od):
     global datacube, frame_duration, out_dir, engine_id
-    global logger
-    dn = os.path.dirname(gtg_file)
-    bn = os.path.basename(gtg_file)
-    proc_gtg_fn = f"{dn}/copies/copy_{engine_id+1}/{bn}"
-    datacube = read_gatan_K2_bin(proc_gtg_fn, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
+    datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     frame_duration = fm_dur
     out_dir = od
     log_dir = f"{out_dir.split('out_images')[0][:-1]}/conv_logs"
@@ -130,7 +126,7 @@ def main():
         seg_dn_list = set(seg_dn_list)
         new_dn_list = list(seg_dn_list - created_dn_set)
         for dn in new_dn_list:
-            os.makedirs(dn)
+            os.makedirs(dn, exist_ok=True)
         created_dn_set = created_dn_set | seg_dn_list
         el = map_func(convert_image_batch, seg_batches)
         err_list.extend(el)
