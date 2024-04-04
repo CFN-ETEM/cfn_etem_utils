@@ -7,6 +7,8 @@ import cv2
 import sys
 import torch
 import math
+import os
+
 
 def get_1frame(i_frame, frames):
     assert i_frame >= 2
@@ -50,7 +52,10 @@ def main():
     sys.path.append(str(udvd_dir))
     import data, utils, models
     target_dir = pathlib.Path(args.to)
-    assert target_dir.is_dir()
+    if not target_dir.exists():
+        os.makedirs(target_dir, exist_ok=True)
+    else:
+        assert target_dir.is_dir()
     source_dir = pathlib.Path(args.source)
     ext_list = ['png', 'tiff']
     src_fn_list = list(sorted(itertools.chain(
