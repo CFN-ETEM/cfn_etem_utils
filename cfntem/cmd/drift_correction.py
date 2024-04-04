@@ -68,7 +68,7 @@ def init_params():
                         action='store_true')
     parser.add_argument("-p", "--parallel", help="Run the job in parallel mode",
                         action='store_true')
-    parser.add_argument("--fps", help="Frame rate to write video", default=400, type=int)
+    parser.add_argument("--fps", help="Frame rate to write video, negative value mean no video writting", default=-1, type=int)
     parser.add_argument("-nms", "--no_minimum_subtraction", help="Don't subtract "
                         "the minimum in image whitenning",
                         action='store_true')
@@ -162,7 +162,8 @@ def write_cropped_files(in_file_list, corrections, source_dir, dest_dir, raw_dir
             cropped_img = crop_image(corr, img, target_cropped_size, reference_point)
             cv2.imwrite(out_fn, cropped_img)
             png_file_list.append(f"file {out_fn} \n")
-            png_file_list.append(f"duration {1.0/fps} \n")
+            if fps > 0:
+                png_file_list.append(f"duration {1.0/fps} \n")
         if num_no_mark_files % mark_interval == 0 and raw_dir_in is not None and raw_dir_out is not None:
             raw_fn_in = os.path.abspath(fn).replace(source_dir, raw_dir_in).replace("png", raw_format)
             cropped_raw_fn = os.path.abspath(fn).replace(source_dir, raw_dir_out)
@@ -175,12 +176,13 @@ def write_cropped_files(in_file_list, corrections, source_dir, dest_dir, raw_dir
                 cv2.imwrite(cropped_raw_fn, img_raw_cropped, [cv2.IMWRITE_PNG_COMPRESSION, 8])
                 num_no_mark_files = -1
         num_no_mark_files += 1
-    clip_image_fn = f"video_clips/clip_image_list_{group_number}.txt"
-    with open(clip_image_fn, "w") as f:
-        f.writelines(png_file_list)
-    ffmpeg_cmd = f"ffmpeg  -f concat -safe 0 -i {clip_image_fn} -r {fps} -pix_fmt yuv420p" \
-                 f" -vcodec libx264 -crf 30 video_clips/clip_{group_number}.mp4"
-    subprocess.Popen(ffmpeg_cmd, shell=True).wait()
+    if fps > 0:
+        clip_image_fn = f"video_clips/clip_image_list_{group_number}.txt"
+        with open(clip_image_fn, "w") as f:
+            f.writelines(png_file_list)
+        ffmpeg_cmd = f"ffmpeg  -f concat -safe 0 -i {clip_image_fn} -r {fps} -pix_fmt yuv420p" \
+                    f" -vcodec libx264 -crf 30 video_clips/clip_{group_number}.mp4"
+        subprocess.Popen(ffmpeg_cmd, shell=True).wait()
 
 
 def crop_image(corr, img, target_cropped_size, reference_point):
@@ -263,7 +265,7 @@ def main():
     adjusted_target_cropped_size = adjusted_target_cropped_size.astype('int32')
     adjusted_target_cropped_size = (adjusted_target_cropped_size // 2) * 2
     print("Adjust target window size to {}".format(adjusted_target_cropped_size))
-    if not os.path.exists("video_clips"):
+    if fps > 0 and not os.path.exists("video_clips"):
         os.makedirs("video_clips")
     list(
         par_map(write_cropped_files,
@@ -281,14 +283,15 @@ def main():
             [no_minimum_subtraction] * nprocesses, 
             [normalize_intensity] * nprocesses)
     )
+    
+    if fps > 0:
+        clip_fn_list = [f"file clip_{i}.mp4 \n" for i in range(nprocesses)]
+        with open("video_clips/clip_fn_list.txt", "w") as f:
+            f.writelines(clip_fn_list)
 
-    clip_fn_list = [f"file clip_{i}.mp4 \n" for i in range(nprocesses)]
-    with open("video_clips/clip_fn_list.txt", "w") as f:
-        f.writelines(clip_fn_list)
-
-    ffmpeg_cmd = "ffmpeg -y -loglevel error -f concat -safe 0 -i video_clips/clip_fn_list.txt" \
-                 " -vcodec copy cropped_video.mp4"
-    subprocess.Popen(ffmpeg_cmd, shell=True).wait()
+        ffmpeg_cmd = "ffmpeg -y -loglevel error -f concat -safe 0 -i video_clips/clip_fn_list.txt" \
+                    " -vcodec copy cropped_video.mp4"
+        subprocess.Popen(ffmpeg_cmd, shell=True).wait()
 
     assert len(corrections_one) == len(full_in_file_list)
 
