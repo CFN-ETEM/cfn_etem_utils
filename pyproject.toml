@@ -3,15 +3,15 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "rankaae"
+name = "cfntem"
 version = "1.0.1"
 authors = [
-  { name="Xiaohui Qu", email="xiaqu@bnl.gov" },
-  { name="Zhu Liang", email="zleung9@gmail.com" }
+  {name="Xiaohui Qu", email="xiaqu@bnl.gov"},
+  {name="Dmitri Zakharov", email="dzakharov@bnl.gov"},
+  {name="Meng Li", email="mli4@bnl.gov"}
 ]
-description = "Rank Constrained Adversarial Autoencoder"
+description = "Python scripts to process TEM images"
 readme = "README.md"
-license-files = {paths=["LICENSE"]}
 requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -19,30 +19,27 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-  "numpy~=1.24.3",
-  "pyfitit~=3.0.5",
-  "torch~=2.0.1",
-  "torch-optimizer~=0.3.0",
-  "torchvision~=0.15.2",
-  "scipy~=1.10.1",
-  "matplotlib~=3.7.1",
-  "plotly~=5.9.0",
-  "pandas~=1.5.3",
-  "ipyparallel~=8.6.1",
-  "monty~=2023.5.8"
+  "numpy~=1.26",
+  "torch~=2.1",
+  "torchvision~=0.16",
+  "scipy~=1.11",
+  "plotly~=5.9",
+  "pandas~=1.5",
+  "ipyparallel~=8.6",
+  "opencv-python~=4.9"
 ]
 
 [project.scripts]
-train_rankaae = "rankaae.cmd.train:main"
-wait_ipp_engines = "rankaae.cmd.wait_ipp_engines:main"
-stop_ipcontroller = "rankaae.cmd.stop_ipcontroller:main"
-rankaae_generate_report = "rankaae.cmd.generate_report:main"
+wait_ipp_engines = "cfntem.cmd.wait_ipp_engines:main"
+convert_stacked_dm4_to_png = "cfntem.cmd.convert_stacked_dm4_to_png:main"
+drift_correction = "cfntem.cmd.drift_correction:main"
+drift_corrected_average = "cfntem.cmd.drift_corrected_average:main"
 
 [tool.hatch.build]
-include = ["rankaae", "example"]
-exclude = [".circleci", "/rankaae/tests"]
+include = ["cfntem", "info"]
+exclude = [".circleci", ".git", ".gitignore"]
 
 [project.urls]
-"Homepage" = "https://github.com/xhqu1981/RankAAE"
+"Homepage" = "https://github.com/CFN-ETEM/cfn_etem_utils"
 
 
