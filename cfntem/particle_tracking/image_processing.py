@@ -291,7 +291,7 @@ class ImageDriftCorrection(ImageProcessor):
                 img1 = cupy.array(self.last_img)
                 img2 = cupy.array(img)
                 step_shift = gpu_phase_cross_correlation(img1, img2, normalization=None)[0]
-            step_shift = -np.array(list(step_shift), dtype=np.int32)
+            step_shift = -np.array(list(step_shift), dtype=np.float64)
         else:
             step_shift = -cpu_phase_cross_correlation(self.last_img, img, normalization=None)[0]
         img_shift = self.accumulated_correction + step_shift
