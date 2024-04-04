@@ -5,6 +5,7 @@ import glob
 import json
 import math
 import os
+import pathlib
 import re
 import socket
 import subprocess
@@ -17,13 +18,6 @@ from cfntem.particle_tracking.image_processing import ImageDriftCorrection
 from cfntem.particle_tracking.io import load_dm4_file
 
 
-def is_valid_directory(parser, arg):
-    if not os.path.isdir(arg):
-        parser.error('The directory {} does not exist!'.format(arg))
-    else:
-        return arg
-
-
 def is_valid_file(parser, arg):
     if not os.path.isfile(arg):
         parser.error('The file {} does not exist!'.format(arg))
@@ -34,17 +28,13 @@ def is_valid_file(parser, arg):
 def init_params():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--source", help="The folder constains binary image",
-                        required=True,
-                        type=lambda x: is_valid_directory(parser, x))
+                        required=True)
     parser.add_argument("-t", "--to", help="The folder to hold the cropped image",
-                        required=True,
-                        type=lambda x: is_valid_directory(parser, x))
+                        required=True)
     parser.add_argument("--raw_in", help="The folder contain the raw image before binarization",
-                        required=False,
-                        type=lambda x: is_valid_directory(parser, x))
+                        required=False)
     parser.add_argument("--raw_out", help="The folder to put cropped raw image",
-                        required=False,
-                        type=lambda x: is_valid_directory(parser, x))
+                        required=False)
     parser.add_argument("--raw_format", help="The file format of raw image",
                         default="dm4",
                         type=str)
@@ -79,8 +69,16 @@ def init_params():
                         default=-1,
                         type=int)
     args = parser.parse_args()
-    source_dir = os.path.abspath(args.source)
-    dest_dir = os.path.abspath(args.to)
+    source_dir = pathlib.Path(args.source).expanduser().absolute()
+    assert source_dir.exists()
+    assert source_dir.is_dir()
+    source_dir = str(source_dir)
+    dest_dir = pathlib.Path(args.to).expanduser().absolute()
+    if not dest_dir.exists():
+        os.makedirs(dest_dir, exist_ok=True)
+    else:
+        assert dest_dir.is_dir()
+    dest_dir = str(dest_dir)
     raw_dir_in = args.raw_in
     raw_dir_out = args.raw_out
     raw_format = args.raw_format
