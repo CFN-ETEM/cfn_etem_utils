@@ -69,8 +69,9 @@ def main():
     model.to(device)
     model.eval()
     
-    noisy_images = [cv2.imread(fn, cv2.IMREAD_ANYDEPTH) 
+    noisy_images = [cv2.imread(str(fn), cv2.IMREAD_ANYDEPTH) 
               for fn in src_fn_list]
+    noisy_images = np.stack(noisy_images)
     v_high = np.percentile(noisy_images, 99, axis=[1, 2])
     noisy_images = noisy_images.astype(np.float32)
     noisy_images = np.clip(noisy_images, a_min=None, a_max=v_high[:, None, None])
