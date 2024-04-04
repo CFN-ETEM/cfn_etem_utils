@@ -6,9 +6,9 @@ import json
 import re
 import cv2
 from itertools import chain
-from ict.particle_tracking.io import binarize_file_list
+from cfntem.particle_tracking.io import binarize_file_list
 
-from ict.particle_tracking.image_processing import ImageEnhance, ImageBinarization, ImageMerge, ImageMaskShrinkAndShift
+from cfntem.particle_tracking.image_processing import ImageEnhance, ImageBinarization, ImageMerge, ImageMaskShrinkAndShift
 
 import ipyparallel as ipp
 import socket
@@ -38,9 +38,9 @@ def get_parallel_map_func():
         import re
         import socket
         from itertools import chain
-        from ict.particle_tracking.io import binarize_file_list
+        from cfntem.particle_tracking.io import binarize_file_list
 
-        from ict.particle_tracking.image_processing import ImageEnhance, ImageBinarization, ImageMerge
+        from cfntem.particle_tracking.image_processing import ImageEnhance, ImageBinarization, ImageMerge
 
     return c[:].map_sync, len(c.ids)
 

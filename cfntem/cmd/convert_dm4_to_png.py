@@ -6,7 +6,7 @@ import re
 import cv2
 from itertools import chain
 
-from ict.particle_tracking.io import load_dm4_file
+from cfntem.particle_tracking.io import load_dm4_file
 
 import ipyparallel as ipp
 
@@ -30,7 +30,7 @@ def get_parallel_map_func():
 
     with c[:].sync_imports():
         import cv2, os, socket
-        from ict.particle_tracking.io import load_dm4_file
+        from cfntem.particle_tracking.io import load_dm4_file
 
 
     return c[:].map_sync, len(c.ids)

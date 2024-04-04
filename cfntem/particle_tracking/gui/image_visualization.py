@@ -2,7 +2,7 @@ import plotly.graph_objs as go
 from PIL import Image
 import cv2
 import numpy as np
-from ict.particle_tracking.utils import numpy_array_to_plotly_image
+from cfntem.particle_tracking.utils import numpy_array_to_plotly_image
 
 
 class ImageVisualizationPlotly(object):

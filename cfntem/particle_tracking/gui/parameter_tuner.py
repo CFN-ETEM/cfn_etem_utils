@@ -10,10 +10,10 @@ from IPython.display import display
 
 import numpy as np
 
-from ict.particle_tracking.image_processing import ImageEnhance, ImageBinarization, ImageMerge
-from ict.particle_tracking.gui.image_visualization import ImageVisualizationPlotly
-from ict.particle_tracking.io import load_dm4_file
-from ict.particle_tracking.utils import numpy_array_to_plotly_image, color_name_to_rgba, \
+from cfntem.particle_tracking.image_processing import ImageEnhance, ImageBinarization, ImageMerge
+from cfntem.particle_tracking.gui.image_visualization import ImageVisualizationPlotly
+from cfntem.particle_tracking.io import load_dm4_file
+from cfntem.particle_tracking.utils import numpy_array_to_plotly_image, color_name_to_rgba, \
     colored_detection_boundary
 
 

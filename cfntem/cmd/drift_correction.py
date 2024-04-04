@@ -13,8 +13,8 @@ from itertools import chain
 import ipyparallel as ipp
 import numpy
 
-from ict.particle_tracking.image_processing import ImageDriftCorrection
-from ict.particle_tracking.io import load_dm4_file
+from cfntem.particle_tracking.image_processing import ImageDriftCorrection
+from cfntem.particle_tracking.io import load_dm4_file
 
 
 def is_valid_directory(parser, arg):
@@ -121,8 +121,8 @@ def get_parallel_map_func():
     print("Engine IDs:", c.ids)
     with c[:].sync_imports():
         import cv2, os, numpy, json, socket
-        from ict.particle_tracking.image_processing import ImageDriftCorrection
-        from ict.particle_tracking.io import load_dm4_file
+        from cfntem.particle_tracking.image_processing import ImageDriftCorrection
+        from cfntem.particle_tracking.io import load_dm4_file
     c[:].push(dict(crop_image=crop_image),
               block=True)
 

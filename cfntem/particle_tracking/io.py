@@ -4,8 +4,8 @@ import cv2
 import hyperspy.api as hs
 from PIL import Image
 import numpy as np
-from ict.particle_tracking.image_processing import ImageEnhance, ImageMerge, ImageAverage, ImageMaskShrinkAndShift
-from ict.particle_tracking.utils import estimate_detection_error
+from cfntem.particle_tracking.image_processing import ImageEnhance, ImageMerge, ImageAverage, ImageMaskShrinkAndShift
+from cfntem.particle_tracking.utils import estimate_detection_error
 
 
 def load_dm4_file(fn, processors=(), no_minimum_subtraction=False, normalize_intensity=-1):

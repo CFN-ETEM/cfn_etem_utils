@@ -186,7 +186,7 @@ class ImageMerge(ImageProcessor):
         n_worst = round(window_size * worse_image_removal_ratio) if worse_image_removal_ratio is not None else 0
         self.last_err = None
         if n_worst > 0:
-            from ict.particle_tracking.utils import estimate_detection_error
+            from cfntem.particle_tracking.utils import estimate_detection_error
             diff_list = []
             err1 = estimate_detection_error(merged_bin, images)
             self.last_err = copy.deepcopy(err1)

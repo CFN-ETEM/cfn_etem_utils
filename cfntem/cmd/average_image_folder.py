@@ -5,7 +5,7 @@ import os
 import re
 from itertools import chain
 
-from ict.particle_tracking.io import average_file_list
+from cfntem.particle_tracking.io import average_file_list
 
 
 def is_valid_directory(parser, arg):

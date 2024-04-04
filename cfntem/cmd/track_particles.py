@@ -6,7 +6,7 @@ from itertools import chain
 from scipy.spatial import distance_matrix
 import numpy as np
 
-from ict.particle_tracking.tracking import ParticleTracker
+from cfntem.particle_tracking.tracking import ParticleTracker
 import ipyparallel as ipp
 
 
@@ -143,7 +143,7 @@ def get_parallel_map_func():
     with c[:].sync_imports():
         import cv2, os, json, bz2
         import socket
-        from ict.particle_tracking.tracking import ParticleTracker
+        from cfntem.particle_tracking.tracking import ParticleTracker
 
     return c[:].map_sync, len(c.ids)
 
