@@ -1,0 +1,48 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rankaae"
+version = "1.0.1"
+authors = [
+  { name="Xiaohui Qu", email="xiaqu@bnl.gov" },
+  { name="Zhu Liang", email="zleung9@gmail.com" }
+]
+description = "Rank Constrained Adversarial Autoencoder"
+readme = "README.md"
+license-files = {paths=["LICENSE"]}
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "numpy~=1.24.3",
+  "pyfitit~=3.0.5",
+  "torch~=2.0.1",
+  "torch-optimizer~=0.3.0",
+  "torchvision~=0.15.2",
+  "scipy~=1.10.1",
+  "matplotlib~=3.7.1",
+  "plotly~=5.9.0",
+  "pandas~=1.5.3",
+  "ipyparallel~=8.6.1",
+  "monty~=2023.5.8"
+]
+
+[project.scripts]
+train_rankaae = "rankaae.cmd.train:main"
+wait_ipp_engines = "rankaae.cmd.wait_ipp_engines:main"
+stop_ipcontroller = "rankaae.cmd.stop_ipcontroller:main"
+rankaae_generate_report = "rankaae.cmd.generate_report:main"
+
+[tool.hatch.build]
+include = ["rankaae", "example"]
+exclude = [".circleci", "/rankaae/tests"]
+
+[project.urls]
+"Homepage" = "https://github.com/xhqu1981/RankAAE"
+
+
