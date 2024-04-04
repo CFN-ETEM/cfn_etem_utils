@@ -1,7 +1,7 @@
 
 import argparse, os, itertools, time, math
 from datetime import datetime
-from cfntem.io.read_K2 import read_gatan_K2_bin
+from cfntem.format_conversion.read_K2 import read_gatan_K2_bin
 import numpy as np
 from dateutil.relativedelta import relativedelta
 import ipyparallel as ipp
@@ -39,7 +39,7 @@ def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
     )
     map_func =  c.load_balanced_view().map_sync
     with c[:].sync_imports():
-        from cfntem.io.read_K2 import read_gatan_K2_bin
+        from cfntem.format_conversion.read_K2 import read_gatan_K2_bin
         import cv2
         import os, logging
         from datetime import datetime
