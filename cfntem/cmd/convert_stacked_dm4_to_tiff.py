@@ -17,5 +17,5 @@ def main():
     if not dir_tiff.exists():
         os.makedirs(dir_tiff, exist_ok=True)
     for j, img in enumerate(images):
-        Image.fromarray(img).save(dir_tiff / "frame_{j:03d}.tiff")
+        Image.fromarray(img).save(dir_tiff / f"frame_{j:03d}.tiff")
 
