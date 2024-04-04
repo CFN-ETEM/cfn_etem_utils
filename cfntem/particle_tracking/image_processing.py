@@ -2,7 +2,9 @@ from inspect import signature
 
 import numpy as np
 import cv2, os, json, abc, copy
-from skimage.registration import phase_cross_correlation
+from cucim.skimage.registration import phase_cross_correlation as gpu_phase_cross_correlation
+from skimage.registration import phase_cross_correlation as cpu_phase_cross_correlation 
+import cupy
 
 module_dir = os.path.abspath(os.path.dirname(__file__))
 
@@ -239,7 +241,8 @@ class ImageAverage(ImageProcessor):
 
 
 class ImageDriftCorrection(ImageProcessor):
-    def __init__(self, img_shape, target_cropped_size=1200, max_shift=50, rebase_shift=10, rebase_steps=2000):
+    def __init__(self, img_shape, target_cropped_size=1200, max_shift=50, 
+                 rebase_shift=10, rebase_steps=2000, i_gpu=-1):
         self.params = dict()
         self.target_cropped_size = target_cropped_size
         self.maxshift = np.array([max_shift, max_shift])
@@ -252,6 +255,7 @@ class ImageDriftCorrection(ImageProcessor):
         self.last_mean_on_y = None
         self.corrections = []
         self.img_shape = tuple(img_shape)
+        self.i_gpu = i_gpu
         super().__init__()
 
     def rebase(self, img, cur_shift=None):
@@ -282,7 +286,14 @@ class ImageDriftCorrection(ImageProcessor):
             self.rebase(img)
         self.rebase_step_counting += 1
 
-        step_shift = -phase_cross_correlation(self.last_img, img, normalization=None)[0]
+        if self.i_gpu >= 0:
+            with cupy.cuda.Device(self.i_gpu):
+                img1 = cupy.array(self.last_img)
+                img2 = cupy.array(img)
+                step_shift = -gpu_phase_cross_correlation(img1, img2, normalization=None)[0]
+            step_shift = np.array(list(step_shift))
+        else:
+            step_shift = -cpu_phase_cross_correlation(self.last_img, img, normalization=None)[0]
         img_shift = self.accumulated_correction + step_shift
         top, left = ((np.array(img.shape) // 2 - self.target_cropped_size // 2) + img_shift).astype("int32")
         cropped_img = img[top:top + self.target_cropped_size, left:left + self.target_cropped_size]

@@ -26,7 +26,9 @@ dependencies = [
   "plotly~=5.9",
   "pandas~=1.5",
   "ipyparallel~=8.6",
-  "opencv-python~=4.9"
+  "opencv-python~=4.9",
+  "cucim~=23.10",
+  "cupy-cuda12x~=13.0"
 ]
 
 [project.scripts]

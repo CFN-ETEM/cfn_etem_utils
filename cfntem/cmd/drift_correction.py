@@ -56,11 +56,15 @@ def init_params():
                         type=int)
     parser.add_argument("-d", "--drift_save", help="Save the drift correction list",
                         action='store_true')
+    parser.add_argument("-g", "--gpu", help="The index of the GPU to use",
+                        default=0, type=int)
     parser.add_argument("-p", "--parallel", help="Run the job in parallel mode",
                         action='store_true')
     parser.add_argument("--fps", help="Frame rate to write video, negative value mean no video writting", default=-1, type=int)
     parser.add_argument("-nms", "--no_minimum_subtraction", help="Don't subtract "
                         "the minimum in image whitenning",
+                        action='store_true')
+    parser.add_argument("--no_crop", help="Don't crop the images, write drift numbers only",
                         action='store_true')
     parser.add_argument("-ni", "--normalize_intensity", help="Normalize the average "
                         "intensity to an averaged value, in the range of 0~255. "
@@ -73,10 +77,12 @@ def init_params():
     assert source_dir.exists()
     assert source_dir.is_dir()
     source_dir = str(source_dir)
+    i_gpu = args.gpu
+    no_crop = args.no_crop
     dest_dir = pathlib.Path(args.to).expanduser().absolute()
-    if not dest_dir.exists():
+    if (not no_crop) and (not dest_dir.exists()):
         os.makedirs(dest_dir, exist_ok=True)
-    else:
+    elif not no_crop:
         assert dest_dir.is_dir()
     dest_dir = str(dest_dir)
     raw_dir_in = args.raw_in
@@ -111,7 +117,7 @@ def init_params():
 
     return parallel_run, source_dir, dest_dir, raw_dir_in, raw_dir_out, raw_format, mark_interval, target_cropped_size, \
            maxshift, rebase_shift, rebase_steps, drift_save, fps, in_file_list, no_minimum_subtraction, \
-           normalize_intensity
+           normalize_intensity, i_gpu, no_crop
 
 
 def get_parallel_map_func():
@@ -128,8 +134,8 @@ def get_parallel_map_func():
 
 
 def find_corrections(img_shape, target_cropped_size, maxshift, rebase_shift, rebase_steps, in_file_list, 
-                     no_minimum_subtraction, normalize_intensity):
-    dc_processor = ImageDriftCorrection(img_shape, target_cropped_size, maxshift, rebase_shift, rebase_steps)
+                     no_minimum_subtraction, normalize_intensity, i_gpu):
+    dc_processor = ImageDriftCorrection(img_shape, target_cropped_size, maxshift, rebase_shift, rebase_steps, i_gpu)
     for fn in in_file_list:
         img = load_dm4_file(fn, no_minimum_subtraction=no_minimum_subtraction, normalize_intensity=normalize_intensity)
         dc_processor.process(img)
@@ -200,7 +206,7 @@ def crop_image(corr, img, target_cropped_size, reference_point):
 def main():
     parallel_run, source_dir, dest_dir, raw_dir_in, raw_dir_out, raw_format, mark_interval, target_cropped_size, \
     maxshift, rebase_shift, rebase_steps, drift_save, fps, full_in_file_list, no_minimum_subtraction, \
-    normalize_intensity = init_params()
+    normalize_intensity, i_gpu, no_crop = init_params()
     if parallel_run:
         par_map, nprocesses = get_parallel_map_func()
     else:
@@ -221,14 +227,15 @@ def main():
         else:
             break
     corr_list = par_map(find_corrections,
-                    [img_shape] * nprocesses,
-                    [target_cropped_size] * nprocesses,
-                    [maxshift] * nprocesses,
-                    [rebase_shift] * nprocesses,
-                    [rebase_steps] * nprocesses,
-                    ifl_chunks,
-                    [no_minimum_subtraction] * nprocesses, 
-                    [normalize_intensity] * nprocesses)
+        [img_shape] * nprocesses,
+        [target_cropped_size] * nprocesses,
+        [maxshift] * nprocesses,
+        [rebase_shift] * nprocesses,
+        [rebase_steps] * nprocesses,
+        ifl_chunks,
+        [no_minimum_subtraction] * nprocesses, 
+        [normalize_intensity] * nprocesses,
+        [i_gpu] * nprocesses)
     corr_list = list(corr_list)
     if drift_save:
         with open("corr_list_before_merge.json", "w") as f:
@@ -251,6 +258,8 @@ def main():
     if drift_save:
         with open("drift_corrections.json", "w") as f:
             json.dump(corrections_one, f, indent=4)
+    if no_crop:
+        return 0
 
     safe_margin = 2
     reference_point = -numpy.array(corrections_one)[:, 0, :].min(axis=0)
