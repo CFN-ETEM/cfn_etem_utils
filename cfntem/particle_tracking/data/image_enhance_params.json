@@ -1,0 +1,10 @@
+{
+    "bilat_r_color": 150,
+    "bilat_r_space": 5,
+    "hist_clip_limit": 2.0,
+    "hist_grid_size": 11,
+    "post_bilat": false,
+    "pre_bilat": true,
+    "reverse_color": false,
+    "use_hist_eqz": true
+}

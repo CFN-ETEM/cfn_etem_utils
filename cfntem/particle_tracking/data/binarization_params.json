@@ -1,0 +1,44 @@
+{
+    "a1_denoise_iter": 2,
+    "a1_denoise_kernel_size": 4,
+    "a1_edge_fix_iter": 1,
+    "a1_edge_fix_kernel_size": 3,
+    "a1_edge_thr": [
+        37,
+        43
+    ],
+    "a1_exclude_iter": 2,
+    "a1_exclude_kernel_size": 5,
+    "a1_expansion_iter": 2,
+    "a1_expansion_kernel_size": 7,
+    "a1_sobel_size": 3,
+    "a1_use_l2_gradient": true,
+    "a2_denoise_iter": 2,
+    "a2_denoise_kernel_size": 5,
+    "a2_edge_fix_iter": 2,
+    "a2_edge_fix_kernel_size": 3,
+    "a2_edge_thr": [
+        46,
+        54
+    ],
+    "a2_exclude_iter": 2,
+    "a2_exclude_kernel_size": 5,
+    "a2_expansion_iter": 2,
+    "a2_expansion_kernel_size": 4,
+    "a2_sobel_size": 3,
+    "a2_use_l2_gradient": false,
+    "a3_denoise_iter": 1,
+    "a3_denoise_kernel_size": 5,
+    "a3_edge_fix_iter": 3,
+    "a3_edge_fix_kernel_size": 4,
+    "a3_edge_thr": [
+        36,
+        50
+    ],
+    "a3_exclude_iter": 2,
+    "a3_exclude_kernel_size": 10,
+    "a3_expansion_iter": 2,
+    "a3_expansion_kernel_size": 5,
+    "a3_sobel_size": 3,
+    "a3_use_l2_gradient": true
+}
