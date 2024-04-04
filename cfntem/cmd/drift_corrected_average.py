@@ -17,7 +17,10 @@ def main():
     args = parser.parse_args()
     fn_json = pathlib.Path(args.drift_correction)
     target_dir = pathlib.Path(args.to)
-    assert target_dir.is_dir()
+    if target_dir.exists():
+        assert target_dir.is_dir()
+    else:
+        os.makedirs(target_dir, exist_ok=True)
     source_dir = pathlib.Path(args.source)
     ext_list = ['png', 'tiff']
     src_fn_list = list(sorted(itertools.chain(
@@ -25,9 +28,11 @@ def main():
     assert len(src_fn_list) > 5
     with open(fn_json) as f:
         d = json.load(f)
+    assert len(src_fn_list) - 4  == len(d)
     
-    images = [cv2.imread(fn, cv2.IMREAD_ANYDEPTH) 
+    images = [cv2.imread(str(fn), cv2.IMREAD_ANYDEPTH) 
               for fn in src_fn_list]
+    images = np.stack(images)
     images = images[2:-2]
     img_shape = images.shape[-2:]
     reference_point = -np.array(d)[:, 0, :].min(axis=0)
