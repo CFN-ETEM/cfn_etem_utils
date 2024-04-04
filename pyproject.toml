@@ -34,6 +34,7 @@ wait_ipp_engines = "cfntem.cmd.wait_ipp_engines:main"
 convert_stacked_dm4_to_tiff = "cfntem.cmd.convert_stacked_dm4_to_tiff:main"
 drift_correction = "cfntem.cmd.drift_correction:main"
 drift_corrected_average = "cfntem.cmd.drift_corrected_average:main"
+udvd_denoising = "cfntem.cmd.udvd_denoising:main"
 
 [tool.hatch.build]
 include = ["cfntem", "info"]
