@@ -47,7 +47,7 @@ def main():
     args = parser.parse_args()
     patch_size = args.patch_size
     udvd_dir = pathlib.Path(args.udvd_path).expanduser()
-    sys.path.append(udvd_dir)
+    sys.path.append(str(udvd_dir))
     import data, utils, models
     target_dir = pathlib.Path(args.to)
     assert target_dir.is_dir()
