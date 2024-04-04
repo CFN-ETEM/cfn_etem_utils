@@ -15,7 +15,7 @@ def load_dm4_file(fn, processors=(), no_minimum_subtraction=False, normalize_int
         img_pil = Image.open(fn)
         img = np.array(img_pil)
     else:
-        img = cv2.imread(fn, cv2.IMREAD_GRAYSCALE)
+        img = cv2.imread(fn, cv2.IMREAD_ANYDEPTH)
     img = ImageEnhance.whiten(img, no_minimum_subtraction=no_minimum_subtraction, 
                               normalize_intensity=normalize_intensity)
     for p in processors:
@@ -34,7 +34,7 @@ def binarize_file_list(in_file_list, focus_index, processors,
         images_unmerged = [load_dm4_file(fn, non_merge_processors)
             for fn in ImageMerge.get_sub_window(in_file_list, focus_index, window_size)]
     else:
-        images_unmerged = [cv2.imread(fn, cv2.IMREAD_GRAYSCALE)
+        images_unmerged = [cv2.imread(fn, cv2.IMREAD_ANYDEPTH)
                            for fn in ImageMerge.get_sub_window(in_file_list, focus_index, window_size)]
     if window_size > 1:
         img_merged = merge_processor.process(images_unmerged)
@@ -56,7 +56,7 @@ def binarize_file_list(in_file_list, focus_index, processors,
         out_dir = os.path.dirname(out_file)
         if not os.path.exists(out_dir):
             os.makedirs(out_dir)
-        cv2.imwrite(out_file, img_merged)
+        cv2.imwrite(out_file, img_merged, [cv2.IMWRITE_PNG_COMPRESSION, 0])
     img_marked = None
     if record_file is not None:
         if raw_file is not None:

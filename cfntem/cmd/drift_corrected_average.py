@@ -1,7 +1,9 @@
+import itertools
 import argparse, pathlib, os, json
 import hyperspy.api as hs
 from PIL import Image
 import numpy as np
+import cv2
 
 
 def main():
@@ -14,16 +16,24 @@ def main():
                         required=True)
     args = parser.parse_args()
     fn_json = pathlib.Path(args.drift_correction)
+    target_dir = pathlib.Path(args.to)
+    assert target_dir.is_dir()
+    source_dir = pathlib.Path(args.source)
+    ext_list = ['png', 'tiff']
+    src_fn_list = list(sorted(itertools.chain(
+        *[source_dir.glob(f'*.{ext}') for ext in ext_list])))
+    assert len(src_fn_list) > 5
     with open(fn_json) as f:
         d = json.load(f)
     
+    images = [cv2.imread(fn, cv2.IMREAD_ANYDEPTH) 
+              for fn in src_fn_list]
     images = images[2:-2]
     img_shape = images.shape[-2:]
     reference_point = -np.array(d)[:, 0, :].min(axis=0)
     reference_point[reference_point < 0] = 0
     target_cropped_size = np.array(img_shape) \
-                               -np.array(d)[:, 0, :].max(axis=0) \
-                               - reference_point
+        -np.array(d)[:, 0, :].max(axis=0) - reference_point
     target_cropped_size = target_cropped_size.astype('int32')
     cropped_images = []
     for i, (img_shift, _) in enumerate(d):
@@ -37,5 +47,8 @@ def main():
     cropped_images = np.stack(cropped_images)
     drift_corrected_avg_image = cropped_images.mean(axis=0)
     direct_avg_image = images.mean(axis=0)
-    Image.fromarray(direct_avg_image).save(f"avg_images/{i_file}_direct_average_16frames.tiff")
-    Image.fromarray(drift_corrected_avg_image).save(f"avg_images/{i_file}_drift_corrected_average.tiff")
+    
+    Image.fromarray(direct_avg_image).save(
+        target_dir / f"direct_average_{len(images)}frames.tiff")
+    Image.fromarray(drift_corrected_avg_image).save(
+        target_dir / f"drift_corrected_average_{len(images)}frames.tiff")
