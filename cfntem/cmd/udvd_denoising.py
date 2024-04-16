@@ -43,7 +43,7 @@ def main():
                         required=True)
     parser.add_argument("-g", "--gpu", help="The index of the GPU to use",
                         default=0, type=int)
-    parser.add_argument("-p", "--patch_size", help="The size of patch to split the image",
+    parser.add_argument("-p", "--patch_size", help="The size of patch to split the image, default to 550",
                         default=550, type=int)
 
     args = parser.parse_args()
