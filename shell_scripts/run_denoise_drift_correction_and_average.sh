@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 if [[ $# -ne 2 ]]
     then
         echo Usage: run_denoise_drift_correction_and_average.sh DM4_FILENAME UDVD_PATH
