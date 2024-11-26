@@ -28,7 +28,8 @@ dependencies = [
   "ipyparallel~=8.6",
   "opencv-python~=4.9",
   "cucim~=23.10",
-  "cupy-cuda12x~=13.0"
+  "cupy-cuda12x~=13.0",
+  "py4dstem==0.13.6"
 ]
 
 [project.scripts]
