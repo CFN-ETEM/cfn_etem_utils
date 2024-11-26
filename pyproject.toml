@@ -29,7 +29,7 @@ dependencies = [
   "opencv-python~=4.9",
   "cucim~=23.10",
   "cupy-cuda12x~=13.0",
-  "py4dstem==0.13.6"
+  "py4dstem==v0.12.16"
 ]
 
 [project.scripts]
