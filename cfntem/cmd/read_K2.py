@@ -67,7 +67,7 @@ def main():
                         help='The path of GTG file')
     parser.add_argument('-b', '--batch_size', type=int, default=10,
                         help='Number of images as an unit for allocation')
-    parser.add_argument('--out_dir', type=str, default='ipypar',                     
+    parser.add_argument('--out_dir', type=str, default='converted_images',                     
                         help='The directory to save converted images')
     parser.add_argument('-p', '--processes', type=int, default=8,
                         help='Number of processes run in parallel')
