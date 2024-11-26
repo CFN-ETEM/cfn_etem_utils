@@ -92,7 +92,7 @@ def main():
     else:
         with ProcessPoolExecutor(args.processes, 
                                  initializer=set_engine_global_variables, 
-                                 initargs=((args.ipp_dir, args.gtg_file, frame_duration, out_dir))
+                                 initargs=((args.gtg_file, frame_duration, out_dir))
                                  ) as executor:
             err_list = executor.map(convert_image_batch, frame_id_batches)
             err_list = list(err_list)
