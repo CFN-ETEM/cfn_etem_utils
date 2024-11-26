@@ -7,16 +7,19 @@ from dateutil.relativedelta import relativedelta
 import ipyparallel as ipp
 import cv2
 import logging
+from concurrent.futures import ProcessPoolExecutor
+
 
 def set_engine_global_variables(gtg_file, fm_dur, od):
-    global datacube, frame_duration, out_dir, engine_id
+    global datacube, frame_duration, out_dir, logger
     datacube = read_gatan_K2_bin(gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
     frame_duration = fm_dur
     out_dir = od
     log_dir = f"{os.path.split(out_dir)[0]}/conv_logs"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir, exist_ok=True)
-    log_path = f"{log_dir}/engine_{engine_id:02d}.txt"
+    engine_id = os.getpid()
+    log_path = f"{log_dir}/engine_{engine_id}.txt"
     handler = logging.FileHandler(log_path) # print log in file
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(
@@ -25,34 +28,13 @@ def set_engine_global_variables(gtg_file, fm_dur, od):
             datefmt ='%m-%d %H:%M'
         )
     )
-    logger = logging.getLogger(f"engine_{engine_id:02d}_info")
+    logger = logging.getLogger(f"engine_{engine_id}_info")
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
 
-def set_engine_id(ei):
-    global engine_id
-    engine_id = ei
-
-def get_map_func(ipp_dir, gtg_file, frame_duration, out_dir):
-    c = ipp.Client(
-        connection_info=f"{ipp_dir}/security/ipcontroller-client.json"
-    )
-    map_func =  c.load_balanced_view().map_sync
-    with c[:].sync_imports():
-        from cfntem.format_conversion.k2_to_numpy import read_gatan_K2_bin
-        import cv2
-        import os, logging
-        from datetime import datetime
-        from dateutil.relativedelta import relativedelta
-    for i, en in enumerate(c):
-        en.apply(set_engine_id, i)
-    c[:].apply(set_engine_global_variables, gtg_file, frame_duration, out_dir)
-    c[:].wait()
-    return map_func, len(c.ids)
 
 def convert_image_batch(id_list):
-    global datacube, frame_duration, out_dir, engine_id
-    logger = logging.getLogger(f"engine_{engine_id:02d}_info")
+    global datacube, frame_duration, out_dir, logger
     error_messages = []
     logger.info(f"Started to process {id_list[:3]} to {id_list[-3:]} at {datetime.isoformat(datetime.now())}")
     for j, i_frame in enumerate(id_list):
@@ -83,14 +65,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-g', '--gtg_file', type=str, required=True,
                         help='The path of GTG file')
-    parser.add_argument('-b', '--batch_size', type=str, required=True,
+    parser.add_argument('-b', '--batch_size', type=int, default=10,
                         help='Number of images as an unit for allocation')
-    parser.add_argument('--ipp_dir', type=str, default='ipypar',
-                        help='The directory for IpyParallel environment')
-    parser.add_argument('--out_dir', type=str, default='ipypar',
-                        help='The directory to save converted images')
-    parser.add_argument('-s', '--sequential', action='store_true',
-                        help='Run the conversion sequentially')
+    parser.add_argument('-p', '--processes', type=int, default=8,
+                        help='Number of processes run in parallel')
     args = parser.parse_args()
     print("first round reading", datetime.isoformat(datetime.now()))
     datacube = read_gatan_K2_bin(args.gtg_file, mem='MEMMAP', K2_sync_block_IDs=False, K2_hidden_stripe_noise_reduction=False)
@@ -103,17 +81,20 @@ def main():
     start_time = time.time()
     out_dir = os.path.join(args.out_dir, os.path.basename(args.gtg_file).replace("_.gtg", ""))
     print("Set up parallel or sequential engine", datetime.isoformat(datetime.now()))
-    if args.sequential:
-        map_func, n_procs = map, 1
-        set_engine_id(0)
-        set_engine_global_variables(args.gtg_file, frame_duration, out_dir)
-    else:
-        map_func, n_procs = get_map_func(args.ipp_dir, args.gtg_file, frame_duration, out_dir)
-    print(f"There are {n_frames} frames, will convert using {n_procs} " 
+    print(f"There are {n_frames} frames, will convert using {args.processes} " 
           f"processes and allocate {batch_size} images each time")
     print("Start conversion", datetime.isoformat(datetime.now()))
-    err_list = map_func(convert_image_batch, frame_id_batches)
-    print("Finished conversion", datetime.isoformat(datetime.now()))
+    if args.processes == 1:
+        set_engine_global_variables(args.gtg_file, frame_duration, out_dir)
+        err_list = map(convert_image_batch, frame_id_batches)
+    else:
+        with ProcessPoolExecutor(args.processes, 
+                                 initializer=set_engine_global_variables, 
+                                 initargs=((args.ipp_dir, args.gtg_file, frame_duration, out_dir))
+                                 ) as executor:
+            err_list = executor.map(convert_image_batch, frame_id_batches)
+            err_list = list(err_list)
+            print("Finished conversion", datetime.isoformat(datetime.now()))
     err_list = list(itertools.chain(*err_list))
     time_used = time.time() - start_time
     if len(err_list) > 0:
