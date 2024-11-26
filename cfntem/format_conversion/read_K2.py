@@ -96,7 +96,7 @@ class K2DataArray(Sequence):
 
         # get the important metadata
         try:
-            if gtg.allTags['.Microscope Info.Operation Mode'] == 'IMAGING':
+            if 'IMAGING' in gtg.allTags['.Microscope Info.Operation Mode']:
                 R_Nx = self._guess_number_frames() // 32
                 R_Ny = 1
             else:
@@ -108,7 +108,7 @@ class K2DataArray(Sequence):
             R_Ny = 1
 
         try:
-            if gtg.allTags['.Microscope Info.Operation Mode'] == 'IMAGING':
+            if 'IMAGING' in gtg.allTags['.Microscope Info.Operation Mode']:
                 Q_Nx = gtg.allTags[".Acquisition.Parameters.Detector.height"]
                 Q_Ny = gtg.allTags[".Acquisition.Parameters.Detector.width"]
             else:
