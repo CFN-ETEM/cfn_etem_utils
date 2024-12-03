@@ -42,7 +42,7 @@ def convert_image_batch(id_list):
             if j < 3:
                 logger.info(f"Extract frame {i_frame} at {datetime.isoformat(datetime.now())}")
             img = datacube.data[i_frame, 0, :, :]
-            img = (255 * img / img.max()).astype('uint8')
+            img = (img).astype('uint16')
             rt = relativedelta(seconds=frame_duration * i_frame)
             time_txt = f'Hour{int(rt.hours):02d}_Minute{int(rt.minutes):02d}_Second{int(rt.seconds):02d}'
             dir_time_txt = '/'.join(time_txt.split("_"))
